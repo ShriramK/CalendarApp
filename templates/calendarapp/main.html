@@ -1,0 +1,42 @@
+{% extends "calendarapp/base.html" %}
+
+{% block content %}
+	<style type="text/css">
+		.main { margin-left: 25px; margin-top: 30px; }
+		.body { font-style: italic; font-size: 1.5em; margin: 15px;}
+		.title {
+			font-size: 1.4em; margin-top: 20px; border-bottom: 1px solid #ccc;
+			padding-left: 4px; margin-left: 5px;
+		}
+		.clear{ float: both; }
+		.current { font-size: 1.2em; float: left; border: 1px solid #ccc; width: 105px; padding: 4px; margin: 2px; background-color: yellow; }
+		.month { font-size: 1.2em; float: left; border: 1px solid #ccc; width: 105px; padding: 4px; margin: 2px; }
+		.current a, .month a { text-decoration: none; }
+		.h4{ clear:both; text-align: center; margin-left: -90px; padding-top: 5px; padding-bottom: 5px;}
+	</style>
+
+	<br />
+	<br />
+
+<a href="{% url calendarapp.views.main year|add:'-3' %}">&lt;&lt; Prev</a>
+<a href="{% url calendarapp.views.main year|add:'3' %}">Next &gt;&gt;</a>
+	
+	{% for year, months in years %}
+		<div class="clear"></div>
+		<div class="h4"><h4>{{ year }}</h4></div>
+		{% for month in months %}
+			<div class=
+			{% if month.current %}"current"{% endif %}
+			{% if not month.current %}"month"{% endif %}>
+				{% if month.entry %}<b>{% endif %}
+				<a href="{% url calendarapp.views.month year month.n %}">{{ month.name }}</a>
+				{% if month.entry %}</b>{% endif %}
+			</div>
+
+			{% if month.n == 6 %}<br />{% endif %}
+
+		{% endfor %}
+
+	{% endfor %}
+
+{% endblock %}
