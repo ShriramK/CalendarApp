@@ -17,35 +17,12 @@
 		.h4{ clear:both; text-align: center; margin-left: -90px; padding-top: 5px; padding-bottom: 5px;}
 	</style>
 
-	{% for entry in other_entries %}
-		<div class="entry">
-		{{ entry.creator }}
-		{{ entry.short|safe }}<br />
-		{{ entry.body }}<br />
-		</div>
-	{% endfor %} <br />
-
-	<h4>My Entries</h4>
-	<form action="{% url calendarapp.views.day year month day %}" method="POST">{% csrf_token %}
-
-	{{ entries.management_form }}
-
-	{% for entry in entries.forms %}
-		{{ entry.id }}
-		<div class="entry">
-			<div class="del">Delete {{ entry.DELETE }}</div>
-			<div id="inp1">
-				<p>Title: {{ entry.title }}</p>
-				<p>Snippet: {{ entry.snippet }}</p>
-			</div>
-			<p>Remind: {{ entry.remind }}</p>
-			{{ entry.body }}
-		</div>
-	{% endfor %}
-
+	<h4>Settings</h4>
+	<form action="" method="POST"> {% csrf_token %}
+	Show other users' entries:
+		<input type="checkbox" name="show_users" {% if show_users %}checked{% endif %} />
 	<input type="submit" value="Save" />
 	</form>
 
+
 {% endblock %}
-
-

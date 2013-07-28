@@ -1,5 +1,6 @@
 import calendar
 import time
+from calendarapp.models import *
 from datetime import date, datetime, timedelta
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
@@ -7,8 +8,6 @@ from django.core.urlresolvers import reverse
 from django.forms.models import modelformset_factory
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404, render_to_response
-
-from calendarapp.models import *
 
 mnames = "January February March April May June July August September October November December"
 mnames = mnames.split()
@@ -33,6 +32,9 @@ def main(request, year=None):
 			entry = current = False # are there entry(s) for this month; current month ?
 			entries = Entry.objects.filter(date__year=y, date__month=n+1)
 
+			if not _show_users(request):
+				entries = entries.filter(creator=request.user)
+
 			if entries:
 				entry = True
 			if y == nowy and n+1 == nowm:
@@ -42,9 +44,6 @@ def main(request, year=None):
 
 	return render_to_response("calendarapp/main.html", dict(years=lst, user=request.user, year=year,
 													reminders=reminders(request)))
-
-def settings(request):
-	pass
 
 @login_required
 def month(request, year, month, change=None):
@@ -74,6 +73,8 @@ def month(request, year, month, change=None):
 		entries = current = False # are there entries for this day; current day?
 		if day:
 			entries = Entry.objects.filter(date__year=year, date__month=month, date__day=day)
+			if not _show_users(request):
+				entries = entries.filter(creator=request.user)
 			if day == nday and year == nyear and month == nmonth:
 				current = True
 
@@ -104,14 +105,13 @@ def day(request, year, month, day):
 		# display formset for existing entries and one extra form
 		formset = EntriesFormset(queryset=Entry.objects.filter(date__year=year, 
 			date__month=month, date__day=day, creator=request.user))
-	return render_to_response("calendarapp/day.html", add_csrf(request, entries=formset, year=year,
-				month=month, day=day))
 
-def add_csrf(request, ** kwargs):
-	"""Add CSRF and user to dictionary."""
-	d = dict(user=request.user, ** kwargs)
-	d.update(csrf(request))
-	return d
+	other_entries = []
+	if _show_users(request):
+		other_entries = Entry.objects.filter(date__year=year, date__month=month, 
+										date__day=day).exclude(creator=request.user)
+	return render_to_response("calendarapp/day.html", add_csrf(request, entries=formset, year=year,
+				month=month, day=day, other_entries=other_entries, reminders=reminders(request)))
 
 def reminders(request):
 	"""Return the list of reminders for today and tomorrow."""
@@ -122,3 +122,28 @@ def reminders(request):
 	year, month, day = tomorrow.timetuple()[:3]
 	return list(reminders) + list(Entry.objects.filter(date__year=year, date__month=month,
 									date__day=day, creator=request.user, remind=True))
+
+@login_required
+def settings(request):
+	"""Settings screen."""
+	s = request.session
+	_show_users(request)
+	if request.method == "POST":
+		s["show_users"] = (True if "show_users" in request.POST else False)
+	return render_to_response("calendarapp/settings.html", add_csrf(request, show_users=s["show_users"]))
+
+
+'''Helper Functions'''
+
+def add_csrf(request, ** kwargs):
+	"""Add CSRF and user to dictionary."""
+	d = dict(user=request.user, ** kwargs)
+	d.update(csrf(request))
+	return d
+
+def _show_users(request):
+	"""Return show_users setting; if it does not exist, initialize it. """
+	s = request.session
+	if not "show_users" in s:
+		s["show_users"] = True
+	return s["show_users"]
