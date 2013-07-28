@@ -1,0 +1,70 @@
+{% extends "calendarapp/base.html" %}
+
+{% block content %}
+	<style type="text/css">
+		.main { margin-left: 25px; margin-top: 30px; }
+		.body { font-style: italic; font-size: 1.5em; margin: 15px;}
+		.title {
+			font-size: 1.4em; margin-top: 20px; border-bottom: 1px solid #ccc;
+			padding-left: 4px; margin-left: 5px;
+		}
+		.month { font-size: 1.2em; border: 1px solid #ccc; width: 750px; padding: 20px; }
+		.clear{ float: both; }
+		.empty{ display: inline-block; width: 92px; margin-right: 3px; }
+		.day { font-size: 1.0em; display: inline-block; border: 1px solid #ccc; padding-left: 2px; padding-top: 20px; padding-bottom: 20px; width: 90px; margin-right: 2px; }
+		.current { font-size: 1.2em; display: inline-block; border: 1px solid #ccc; padding-left: 2px; padding-top: 20px; padding-bottom: 20px; width: 90px; margin-right: 2px; background-color: yellow; }
+		.current a, .month a { text-decoration: none; }
+		.h4{ clear:both; text-align: center; margin-left: -90px; padding-top: 5px; padding-bottom: 5px;}
+	</style>
+
+	<br />
+	<br />
+
+<a href="{% url calendarapp.views.month year month "prev" %}">&lt;&lt; Prev</a>
+<a href="{% url calendarapp.views.month year month "next" %}">Next &gt;&gt;</a>
+	
+		<div class="h4"><h4>{{ mname }} {{ year }}</h4></div>
+
+		<div class="month">
+			<table>
+				<tr>
+					<td class="empty">Mon</td>
+					<td class="empty">Tue</td>
+					<td class="empty">Wed</td>
+					<td class="empty">Thu</td>
+					<td class="empty">Fri</td>
+					<td class="empty">Sat</td>
+					<td class="empty">Sun</td>
+				</tr>
+
+				{% for week in month_days %}
+					<tr>
+					{% for day, entries, current in week %}
+
+						<!-- TD style: empty | day | current; onClick handler and highlight -->
+						<td class= {% if day == 0 %}"empty"{% endif %}
+						{% if day != 0  and not current %}"day"{% endif %}
+						{% if day != 0 and current %}"current"{% endif %}
+						{% if day != 0 %}
+							onClick="parent.location='{% url calendarapp.views.day year month day %}'"
+							onMouseOver="this.bgColor='#eeeeee';"
+							onMouseOut="this.bgColor='white';"
+						{% endif %} >
+
+						<!-- Day number and entry snippets -->
+						{% if day != 0 %}
+							{{ day }}
+							{% for entry in entries %}
+								<br />
+								<b>{{ entry.creator }}</b>: {{ entry.short|safe }}
+							{% endfor %}
+						{% endif %}
+						</td>
+					{% endfor %}
+					</tr>
+				{% endfor %}
+			</table>
+
+			<div class="clear"></div>
+		</div>
+{% endblock %}

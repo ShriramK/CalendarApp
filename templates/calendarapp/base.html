@@ -32,6 +32,8 @@
 		#container { margin: auto; width: 800px; border: 0px solid; }
 		p { font-size: 1.1em; }
 		h3 { margin-right: 30px; display: inline; }
+
+		.reminders { float: right; border: 2px solid #ccc; width: 80px; padding: 2px; }
 	</style>
 </head>
 
@@ -50,6 +52,16 @@
 		</div>
 
 		<div id="content">
+			{% if reminders %}
+			<div class="reminders">
+				<div class="gr">Alerts</div>
+				{% for reminder in reminders %}
+					<p>
+					{{ reminder.short|safe }}
+					</p>
+				{% endfor %}
+			</div>
+			{% endif %}
 			{% block content %}{% endblock %}
 		</div>
 	</div>
